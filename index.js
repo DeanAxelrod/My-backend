@@ -33,7 +33,7 @@ app.post('/get-prompt', async (req, res) => {
         messages: [
           {
             role: 'user',
-            content: `Translate this dog emotion classification into a funny short human-like sentence: ${classification}`,
+            content: `Translate this dog emotion or sound classification into a funny short human-like sentence: ${classification}`,
           },
         ],
       },

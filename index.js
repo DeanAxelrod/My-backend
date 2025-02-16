@@ -16,7 +16,6 @@ app.use(express.json());
 
 // Environment variable for OpenAI API Key
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
 if (!OPENAI_API_KEY) {
   console.error('Error: OpenAI API key is not set');
   process.exit(1);
@@ -28,12 +27,12 @@ app.post('/get-prompt', async (req, res) => {
 
   const { classification } = req.body;
 
-  // More detailed error checking
+  // Explicitly check for classification
   if (!classification) {
     console.error('Error: Classification is missing from request body');
     return res.status(400).json({ 
       error: 'Classification is required',
-      details: 'The request body must include a "classification" field' 
+      details: 'The request body must include a non-empty "classification" field'
     });
   }
 

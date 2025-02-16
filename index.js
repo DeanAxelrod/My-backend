@@ -1,15 +1,17 @@
+// Full code with modifications
+
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 4000; // Use the environment variable for the port
+const port = process.env.PORT || 4000;
 
 // Middleware to configure CORS
 app.use(cors({
-  origin: '*',  // Allow all origins. Change this to specific domains like 'https://x.thunkable.com' for added security.
-  methods: ['GET', 'POST', 'OPTIONS'],  // Allow these HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization']  // Allow these headers
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -24,6 +26,10 @@ if (!OPENAI_API_KEY) {
 
 app.post('/get-prompt', async (req, res) => {
   const { classification } = req.body;
+
+  if (!classification) {
+    return res.status(400).json({ error: 'Classification is required' });
+  }
 
   try {
     const response = await axios.post(
@@ -47,7 +53,7 @@ app.post('/get-prompt', async (req, res) => {
 
     res.json({ prompt: response.data.choices[0].message.content });
   } catch (error) {
-    console.error('Error calling OpenAI API:', error);
+    console.error('Error calling OpenAI API:', error.response?.data || error.message);
     res.status(500).json({ error: 'Failed to get prompt from OpenAI' });
   }
 });

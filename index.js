@@ -1,9 +1,6 @@
-// Full code with modifications
-
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-
 const app = express();
 const port = process.env.PORT || 4000;
 
@@ -14,6 +11,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Middleware to parse JSON bodies
 app.use(express.json());
 
 // Environment variable for OpenAI API Key
@@ -25,10 +23,18 @@ if (!OPENAI_API_KEY) {
 }
 
 app.post('/get-prompt', async (req, res) => {
+  // Log the entire request body for debugging
+  console.log('Received request body:', req.body);
+
   const { classification } = req.body;
 
+  // More detailed error checking
   if (!classification) {
-    return res.status(400).json({ error: 'Classification is required' });
+    console.error('Error: Classification is missing from request body');
+    return res.status(400).json({ 
+      error: 'Classification is required',
+      details: 'The request body must include a "classification" field' 
+    });
   }
 
   try {
@@ -53,8 +59,17 @@ app.post('/get-prompt', async (req, res) => {
 
     res.json({ prompt: response.data.choices[0].message.content });
   } catch (error) {
-    console.error('Error calling OpenAI API:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Failed to get prompt from OpenAI' });
+    // More comprehensive error logging
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+
+    res.status(500).json({ 
+      error: 'Failed to get prompt from OpenAI',
+      details: error.response?.data || error.message 
+    });
   }
 });
 

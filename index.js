@@ -1,40 +1,29 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+
 const app = express();
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 4000; // Use the environment variable for the port
 
 // Middleware to configure CORS
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: '*',  // Allow all origins. Change this to specific domains like 'https://x.thunkable.com' for added security.
+  methods: ['GET', 'POST', 'OPTIONS'],  // Allow these HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization']  // Allow these headers
 }));
 
-// Middleware to parse JSON bodies
 app.use(express.json());
 
 // Environment variable for OpenAI API Key
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
 if (!OPENAI_API_KEY) {
   console.error('Error: OpenAI API key is not set');
   process.exit(1);
 }
 
 app.post('/get-prompt', async (req, res) => {
-  // Log the entire request body for debugging
-  console.log('Received request body:', req.body);
-
   const { classification } = req.body;
-
-  // Explicitly check for classification
-  if (!classification) {
-    console.error('Error: Classification is missing from request body');
-    return res.status(400).json({ 
-      error: 'Classification is required',
-      details: 'The request body must include a non-empty "classification" field'
-    });
-  }
 
   try {
     const response = await axios.post(
@@ -58,17 +47,8 @@ app.post('/get-prompt', async (req, res) => {
 
     res.json({ prompt: response.data.choices[0].message.content });
   } catch (error) {
-    // More comprehensive error logging
-    console.error('Error details:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status
-    });
-
-    res.status(500).json({ 
-      error: 'Failed to get prompt from OpenAI',
-      details: error.response?.data || error.message 
-    });
+    console.error('Error calling OpenAI API:', error);
+    res.status(500).json({ error: 'Failed to get prompt from OpenAI' });
   }
 });
 
